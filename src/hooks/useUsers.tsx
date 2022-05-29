@@ -10,11 +10,12 @@ interface Comment {
     text: string;
     rating: number;
 }
-interface userData {
-    startRating: number;
-    endRating: number;
-    name: string;
-    picURL: string;
+export interface User {
+    handle: string;
+    rating: number;
+    titlePhoto: string;
+    avatar: string;
+    pastRating: number; //added on later
 }
 interface CFResponse<resultT> {
     status: "OK" | "FAILED";
@@ -34,6 +35,7 @@ interface RatingChange {
 interface CFApiTypes {
     "blogEntry.comments": Comment[];
     "contest.list": ContestData[];
+    "user.info": User[];
 }
 
 const fetchData = async <T extends keyof CFApiTypes>(
@@ -64,71 +66,28 @@ const fetchData = async <T extends keyof CFApiTypes>(
 
 const useUsers = () => {
     const firebaseClient = useFirebase();
-    const [contests, setContests] = useState<
-        Record<string, boolean> | undefined
-    >(undefined);
-    const [numProcessed, addNum] = useReducer((prev) => prev + 1, 0);
-    useEffect(() => console.log(numProcessed), [numProcessed]);
-    const getUsers = async () => {
-        const res = await fetchData("blogEntry.comments", {
-            blogEntryId: 98729,
-        });
-        if (!res.length) {
-            return (await firebaseClient.getData("savedCommenters")) as Record<
-                string,
-                number
-            >;
-        }
-        const user_map: Record<string, number> = {};
-        res.forEach((val) => {
-            val.commentatorHandle = val.commentatorHandle.replaceAll(".", "|");
-            user_map[val.commentatorHandle] = Math.min(
-                user_map[val.commentatorHandle] || Infinity,
-                val.creationTimeSeconds
-            );
-        });
-        return user_map;
-    };
-    const getHandleRatingChange = async (handle: string, startTime: number) => {
-        const promises = [];
-        console.log(await (firebaseClient.getData("")))
-        for (const [contest, exists] of Object.entries(contests || {})) {
-            if (!exists) continue;
-            promises.push(
-                firebaseClient.getData(`contestData/${contest}/${handle}`)
-            );
-        }
-        let ratingChanges = (await Promise.all(promises)) as RatingChange[];
-
-        ratingChanges = ratingChanges.filter(
-            (item) => item && item.ratingUpdateTime >= startTime
-        );
-        if (!ratingChanges.length) return;
-        ratingChanges.sort((a, b) => a.ratingUpdateTime - b.ratingUpdateTime);
-        addNum();
-        return {
-            handle: handle,
-            old: ratingChanges[0].oldRating,
-            new: ratingChanges[ratingChanges.length - 1].newRating,
-        };
-    };
+    const [userData, setUserData] = useState<User[] | undefined>(undefined);
     const getData = async () => {
-        const userMap = await getUsers();
-        // console.log(userMap);
-        // console.log(contests);
-        const promises = [];
-        for (const [handle, startTime] of Object.entries(userMap)) {
-            promises.push(getHandleRatingChange(handle, startTime));
+        console.log("called!");
+        const userInitialRatings = await firebaseClient.getData("users");
+        const userInfos = await fetchData("user.info", {
+            handles: Object.keys(userInitialRatings)
+                .map((val) => val.replaceAll("|", "."))
+                .join(";"),
+        });
+        for (const user of userInfos) {
+            if (user.rating === undefined) user.rating = -Infinity; //some users have apparently gotten such a low rating that they broke the CF api
+            user.pastRating =
+                userInitialRatings[user.handle.replaceAll(".", "|")];
         }
-        console.log(await Promise.all(promises));
+        userInfos?.sort(
+            (a, b) => (b.rating - b.pastRating) - (a.rating - a.pastRating)
+        );
+        setUserData([...userInfos]);
     };
     useEffect(() => {
-        if (contests !== undefined) {
-            getData();
-        }
-    }, [contests]);
-    useEffect(() => {
-        firebaseClient.getData("savedContests").then((res) => setContests(res));
+        getData();
     }, []);
+    return { userData };
 };
 export default useUsers;

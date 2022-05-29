@@ -60,28 +60,31 @@ const fetchData = async <T extends keyof CFApiTypes>(
         (await Promise.all([promise, wait(ms)]))[0],
     cleanHandle = (handle: string) => handle.replaceAll(".", "|"),
     updateUsers = async () => {
-        let commenters = await fetchData("blogEntry.comments", {
+        const commenters = await fetchData("blogEntry.comments", {
             blogEntryId: 98729,
         });
-        commenters = commenters
+        const commenters_filtered = commenters
             .sort((a, b) => {
                 const v1 = a.commentatorHandle,
                     v2 = b.commentatorHandle;
-                return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
+                return v1 == v2
+                    ? a.creationTimeSeconds - b.creationTimeSeconds
+                    : v1 > v2
+                    ? 1
+                    : -1;
             })
             .filter(function (item, i, ar) {
                 return (
                     !i || item.commentatorHandle != ar[i - 1].commentatorHandle
                 );
             });
-
         const existingData =
             (await admin.database().ref("users").get()).val() || {};
 
         // console.log(commenters);
 
         const promises = [];
-        for (const comment of commenters) {
+        for (const comment of commenters_filtered) {
             if (
                 existingData[cleanHandle(comment.commentatorHandle)] !==
                     undefined &&
@@ -120,19 +123,22 @@ const fetchData = async <T extends keyof CFApiTypes>(
                     .set(prevRating)
             );
         }
-        await admin.database().ref("lastUpdated").set(+new Date());
+        await admin
+            .database()
+            .ref("lastUpdated")
+            .set(+new Date());
         await Promise.all(promises);
+        return commenters_filtered;
     };
 
 exports.updateUsers = functions
-    .runWith({ timeoutSeconds: 540 ,maxInstances:1})
+    .runWith({ timeoutSeconds: 540, maxInstances: 1 })
     .https.onRequest(async (req, resp) => {
-        await updateUsers();
-        resp.send("OK :D");
+        resp.send(await updateUsers());
     });
 exports.updateUsersScheduled = functions
-    .runWith({ timeoutSeconds: 540,maxInstances:1 })
-    .pubsub.schedule("every 30 minutes")
+    .runWith({ timeoutSeconds: 540, maxInstances: 1 })
+    .pubsub.schedule("every 5 minutes")
     .onRun(async () => {
         await updateUsers();
         return null;

@@ -16,11 +16,9 @@ const useFirebase = () => {
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const getData = async (path: string) => {
-        return (await get(ref(database, path))).val();
+        return (await get(ref(database, path))).val()||{};
     };
-    const getImportantOccurences =async (handle:string)=>{
-        return (await ref(database,"contestData").order)
-    }
+
     return {getData}
 };
 export default useFirebase;

@@ -1,0 +1,14 @@
+.row{
+    display: flex;
+    gap: 20px;
+    text-align: left;
+    border-bottom: 2px gray solid;
+    padding: 10px;
+
+}
+.row:last-child{
+    border: none;
+}
+.user{
+    flex-grow: 1;
+}
