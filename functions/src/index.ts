@@ -28,12 +28,6 @@ interface CFApiTypes {
     "user.rating": RatingChange[];
 }
 
-interface ParsedRatingChange {
-    newRating: number;
-    oldRating: number;
-    ratingUpdateTime: number;
-}
-
 admin.initializeApp();
 const fetchData = async <T extends keyof CFApiTypes>(
         method: T,
@@ -65,82 +59,6 @@ const fetchData = async <T extends keyof CFApiTypes>(
     stallPromise = async <T>(promise: Promise<T>, ms: number) =>
         (await Promise.all([promise, wait(ms)]))[0],
     cleanHandle = (handle: string) => handle.replaceAll(".", "|"),
-    _updateContests = async (all: boolean) => {
-        // Resp.send(await admin.database().ref().remove());
-        const alreadySavedContests =
-                (await admin.database().ref("savedContests").get()).val() || {},
-            earliestStartTime = 1641406054,
-            allContests = await fetchData("contest.list"),
-            promises: Promise<void>[] = [];
-        console.log(allContests);
-        let updatedContests = 0;
-        for (const { id, startTimeSeconds } of allContests) {
-            if (startTimeSeconds && startTimeSeconds >= earliestStartTime) {
-                if (alreadySavedContests[id] === undefined || all) {
-                    const ratingChanges = await fetchData(
-                        "contest.ratingChanges",
-                        { contestId: id }
-                    );
-                    if (ratingChanges.length > 0) {
-                        const ratingChangesParsed: Record<
-                            string,
-                            ParsedRatingChange
-                        > = {};
-                        for (const change of ratingChanges) {
-                            ratingChangesParsed[cleanHandle(change.handle)] = {
-                                newRating: change.newRating,
-                                oldRating: change.oldRating,
-                                ratingUpdateTime:
-                                    change.ratingUpdateTimeSeconds,
-                            };
-                        }
-                        promises.push(
-                            admin
-                                .database()
-                                .ref(`contestData/${id}`)
-                                .set(ratingChangesParsed)
-                        );
-                        console.log(`contest ${id} succeeded!`);
-                        updatedContests++;
-                    } else {
-                        console.log(`failed for contest ${id}`);
-                    }
-                    promises.push(
-                        admin
-                            .database()
-                            .ref(`savedContests/${id}`)
-                            .set(
-                                alreadySavedContests[id] ||
-                                    ratingChanges.length > 0
-                            )
-                    );
-                }
-            }
-        }
-
-        const userData = await fetchData("blogEntry.comments", {
-                blogEntryId: 98729,
-            }),
-            userMap: { [user: string]: number } = {};
-        if (userData.length > 0) {
-            userData.forEach((val) => {
-                userMap[cleanHandle(val.commentatorHandle)] = Math.min(
-                    userMap[val.commentatorHandle] || Infinity,
-                    val.creationTimeSeconds
-                );
-            });
-            promises.push(admin.database().ref("savedCommenters").set(userMap));
-        }
-        promises.push(
-            admin
-                .database()
-                .ref("lastUpdated")
-                .set(+new Date())
-        );
-        await Promise.all(promises);
-        // Resp.send(user_map);
-        return updatedContests;
-    },
     updateUsers = async () => {
         let commenters = await fetchData("blogEntry.comments", {
             blogEntryId: 98729,
@@ -165,7 +83,8 @@ const fetchData = async <T extends keyof CFApiTypes>(
         const promises = [];
         for (const comment of commenters) {
             if (
-                existingData[cleanHandle(comment.commentatorHandle)] !== undefined &&
+                existingData[cleanHandle(comment.commentatorHandle)] !==
+                    undefined &&
                 new Date().valueOf() - comment.creationTimeSeconds * 1000 >
                     50 * 24 * 60 * 60 * 1000
             ) {
@@ -201,27 +120,20 @@ const fetchData = async <T extends keyof CFApiTypes>(
                     .set(prevRating)
             );
         }
+        await admin.database().ref("lastUpdated").set(+new Date());
         await Promise.all(promises);
-    },
-    updateContests = functions
-        .runWith({
-            maxInstances: 1,
-            timeoutSeconds: 540,
-        })
-        .https.onRequest(async (req, resp) => {
-            const updatedContests = await _updateContests(false);
-            resp.send({ updatedContests });
-        });
+    };
 
-exports.updateUsers = functions.https.onRequest(async (req, resp) => {
-    await updateUsers();
-    resp.send("OK :D");
-});
-exports.update = updateContests;
-exports.updateAll = functions
-    .runWith({ timeoutSeconds: 540 })
+exports.updateUsers = functions
+    .runWith({ timeoutSeconds: 540 ,maxInstances:1})
+    .https.onRequest(async (req, resp) => {
+        await updateUsers();
+        resp.send("OK :D");
+    });
+exports.updateUsersScheduled = functions
+    .runWith({ timeoutSeconds: 540,maxInstances:1 })
     .pubsub.schedule("every 30 minutes")
-    .onRun(async (context) => {
-        await _updateContests(true);
+    .onRun(async () => {
+        await updateUsers();
         return null;
     });
