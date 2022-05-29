@@ -3,7 +3,6 @@ import React from "react";
 import css from "../styles/userRow.module.css";
 const UserRow = ({ userData }: { userData: User }) => {
     const delta = userData.rating - userData.pastRating;
-    console.log(userData.rating, userData.pastRating);
     return (
         <div className={css.row}>
             <div className={css.user}>

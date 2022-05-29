@@ -41,7 +41,7 @@ const fetchData = async <T extends keyof CFApiTypes>(
             }
             requestUrl = requestUrl.slice(0, requestUrl.length - 1);
         }
-        console.log(requestUrl);
+        // console.log(requestUrl);
         try {
             const response = (await stallPromise(axios(requestUrl), 2000))
                 .data as CFResponse<CFApiTypes[T]>;

@@ -68,7 +68,6 @@ const useUsers = () => {
     const firebaseClient = useFirebase();
     const [userData, setUserData] = useState<User[] | undefined>(undefined);
     const getData = async () => {
-        console.log("called!");
         const userInitialRatings = await firebaseClient.getData("users");
         const userInfos = await fetchData("user.info", {
             handles: Object.keys(userInitialRatings)
