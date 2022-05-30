@@ -1,5 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { get, getDatabase, ref } from "firebase/database";
+import { FirebaseApp, initializeApp } from "firebase/app";
+import { Database, get, getDatabase, ref } from "firebase/database";
+import { useEffect, useState } from "react";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAKnhJvp7Zb0BHBkFIYzyjWwUnd4G4kmPs",
@@ -13,12 +14,18 @@ const firebaseConfig = {
 };
 
 const useFirebase = () => {
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const getData = async (path: string) => {
-        return (await get(ref(database, path))).val()||{};
-    };
+    const [app, setApp] = useState<FirebaseApp>();
+    const [database, setDatabase] = useState<Database>();
 
-    return {getData}
+    useEffect(() => {
+        setApp(initializeApp(firebaseConfig));
+        setDatabase(getDatabase(app));
+    }, []);
+
+    const getData = async (path: string) => {
+        if (!database) return {};
+        return (await get(ref(database, path))).val() || {};
+    };
+    return { database, getData };
 };
 export default useFirebase;

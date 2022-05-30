@@ -20,3 +20,53 @@ a{
   text-decoration: none;
   color: black;
 }
+h2{
+  color: gray;
+  font-size: smaller;
+}
+
+
+.user-legendary {
+  color: red !important;
+}
+
+.user-legendary::first-letter {
+  color: black !important;
+}
+
+
+.user-red {
+  color: red !important;
+}
+
+.user-fire {
+  color: red !important;
+}
+
+.user-yellow {
+  color: #bb0 !important;
+}
+
+.user-violet {
+  color: #a0a !important;
+}
+
+.user-orange {
+  color: #FF8C00 !important;
+}
+
+.user-blue {
+  color: blue !important;
+}
+
+.user-cyan {
+  color: #03A89E !important;
+}
+
+.user-green {
+  color: green !important;
+}
+
+.user-gray {
+  color: gray !important;
+}

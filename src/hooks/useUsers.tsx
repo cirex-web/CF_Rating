@@ -1,5 +1,7 @@
 import axios from "axios";
+import { Database, onValue, ref } from "firebase/database";
 import { useEffect, useReducer, useState } from "react";
+import { colorMappings } from "../components/UserRow";
 import useFirebase from "./useFirebase";
 
 interface Comment {
@@ -16,6 +18,7 @@ export interface User {
     titlePhoto: string;
     avatar: string;
     pastRating: number; //added on later
+    rank: keyof typeof colorMappings;
 }
 interface CFResponse<resultT> {
     status: "OK" | "FAILED";
@@ -67,26 +70,30 @@ const fetchData = async <T extends keyof CFApiTypes>(
 const useUsers = () => {
     const firebaseClient = useFirebase();
     const [userData, setUserData] = useState<User[] | undefined>(undefined);
-    const getData = async () => {
-        const userInitialRatings = await firebaseClient.getData("users");
-        const userInfos = await fetchData("user.info", {
-            handles: Object.keys(userInitialRatings)
-                .map((val) => val.replaceAll("|", "."))
-                .join(";"),
+    const getData = async (database: Database) => {
+        onValue(ref(database, "users"), async (snapshot) => {
+            const userInitialRatings = snapshot.val();
+            const userInfos = await fetchData("user.info", {
+                handles: Object.keys(userInitialRatings)
+                    .map((val) => val.replaceAll("|", "."))
+                    .join(";"),
+            });
+            for (const user of userInfos) {
+                if (user.rating === undefined) user.rating = -Infinity; //some users have apparently gotten such a low rating that they broke the CF api
+                user.pastRating =
+                    userInitialRatings[user.handle.replaceAll(".", "|")];
+            }
+            userInfos?.sort(
+                (a, b) => b.rating - b.pastRating - (a.rating - a.pastRating)
+            );
+            setUserData([...userInfos]);
         });
-        for (const user of userInfos) {
-            if (user.rating === undefined) user.rating = -Infinity; //some users have apparently gotten such a low rating that they broke the CF api
-            user.pastRating =
-                userInitialRatings[user.handle.replaceAll(".", "|")];
-        }
-        userInfos?.sort(
-            (a, b) => (b.rating - b.pastRating) - (a.rating - a.pastRating)
-        );
-        setUserData([...userInfos]);
     };
     useEffect(() => {
-        getData();
-    }, []);
+        if (firebaseClient.database) {
+            getData(firebaseClient.database);
+        }
+    }, [firebaseClient.database]);
     return { userData };
 };
 export default useUsers;
