@@ -1,14 +1,10 @@
 .row{
     display: flex;
-    gap: 20px;
+    gap: 10px;
     text-align: left;
-    border-bottom: 2px gray solid;
     padding: 10px;
     position: relative;
     height: 30px;
-}
-.row:last-child{
-    border: none;
 }
 .user{
     flex-grow: 1;
@@ -18,7 +14,17 @@
     position: absolute;
     left: 0;
     top: 0;
-    padding:3px;
-    box-sizing: border-box;
+    /* padding:1px; */
+    /* box-sizing: border-box; */
     transform: translate(-100%,0);
+    opacity: 0;
+}
+.row:hover .avatar{
+    opacity: 1;
+}
+.row:hover{
+    background-color: rgba(173, 216, 230, 0.517);
+}
+.rank{
+    font-weight: bold;
 }

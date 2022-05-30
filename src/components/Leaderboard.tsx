@@ -10,7 +10,7 @@ const Leaderboard = ({ userInfos }: { userInfos: User[] | undefined }) => {
         <div>
             {userInfos ? (
                 userInfos.map((userData, i) => (
-                    <UserRow userData={userData} key={i} />
+                    <UserRow userData={userData} key={i} i={i} />
                 ))
             ) : (
                 <h2>Loading...</h2>

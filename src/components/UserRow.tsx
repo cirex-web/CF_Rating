@@ -14,12 +14,13 @@ export const colorMappings = {
     newbie: "user-gray",
     unrated: "",
 };
-const UserRow = ({ userData }: { userData: User }) => {
+const UserRow = ({ userData, i }: { userData: User; i: number }) => {
     const delta = userData.rating - userData.pastRating;
-
+    console.log(i);
     return (
         <div className={css.row}>
-                <img className={css.avatar} src={userData.avatar} />
+            <img className={css.avatar} src={userData.avatar} />
+            <span className={css.rank}>{"#" + (i + 1)}</span>
             <div className={css.user}>
                 <a
                     className={colorMappings[userData.rank]}

@@ -2,13 +2,13 @@ import useUsers from "./hooks/useUsers";
 import React from "react";
 import Leaderboard from "./components/Leaderboard";
 import useLastUpdate from "./hooks/useLastUpdate";
+import Timer from "./components/Timer";
 function App() {
     const { userData } = useUsers();
-    const {timeString} = useLastUpdate();
     return (
         <>
             <h1>CF Leaderboard</h1>
-            <h2>Last updated: {timeString} ago</h2>
+            <Timer />
             <Leaderboard userInfos={userData}></Leaderboard>
         </>
     );
