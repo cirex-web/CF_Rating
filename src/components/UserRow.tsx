@@ -19,6 +19,7 @@ const UserRow = ({ userData }: { userData: User }) => {
 
     return (
         <div className={css.row}>
+                <img className={css.avatar} src={userData.avatar} />
             <div className={css.user}>
                 <a
                     className={colorMappings[userData.rank]}

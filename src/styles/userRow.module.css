@@ -4,11 +4,21 @@
     text-align: left;
     border-bottom: 2px gray solid;
     padding: 10px;
-
+    position: relative;
+    height: 30px;
 }
 .row:last-child{
     border: none;
 }
 .user{
     flex-grow: 1;
+}
+.avatar{
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding:3px;
+    box-sizing: border-box;
+    transform: translate(-100%,0);
 }
