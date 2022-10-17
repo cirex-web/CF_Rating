@@ -6,6 +6,7 @@ const styles: React.CSSProperties = {
     flexDirection: "column",
 };
 const Leaderboard = ({ userInfos }: { userInfos: User[] | undefined }) => {
+    
     return (
         <div>
             {userInfos ? (

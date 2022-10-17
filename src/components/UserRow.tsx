@@ -16,7 +16,6 @@ export const colorMappings = {
 };
 const UserRow = ({ userData, i }: { userData: User; i: number }) => {
     const delta = userData.rating - userData.pastRating;
-    console.log(i);
     return (
         <div className={css.row}>
             <img className={css.avatar} src={userData.avatar} />
