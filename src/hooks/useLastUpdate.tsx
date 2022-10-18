@@ -39,8 +39,7 @@ const useLastUpdate = () => {
 
   const { database } = useContext(FirebaseContext);
   useEffect(() => {
-    if(!database){
-      console.log("whaa");
+    if (!database) {
       return;
     }
     onValue(ref(database, "lastUpdated"), (snapshot) => {
@@ -54,6 +53,6 @@ const useLastUpdate = () => {
     }, 300);
     return () => clearTimeout(id);
   }, [iteration, timeUpdated]);
-  return { timeString };
+  return timeString;
 };
 export default useLastUpdate;

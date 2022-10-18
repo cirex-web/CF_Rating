@@ -1,19 +1,22 @@
 import useUsers from "./hooks/useUsers";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Leaderboard from "./components/Leaderboard";
 import useLastUpdate from "./hooks/useLastUpdate";
-import Timer from "./components/Timer";
 import css from "./styles/app.module.css";
 import InfoBox from "./components/InfoBox";
 function App() {
   const { userData } = useUsers();
+  const [currentUser, setCurrentUser] = useState(0);
+
   return (
     <>
       <h1>CF Leaderboard</h1>
-      <Timer />
       <div className={css.content}>
-        <Leaderboard userInfos={userData}></Leaderboard>
-        <InfoBox />
+        <Leaderboard
+          userInfos={userData}
+          setCurrentUser={setCurrentUser}
+        ></Leaderboard>
+        <InfoBox userData={userData?.[currentUser]} />
       </div>
     </>
   );

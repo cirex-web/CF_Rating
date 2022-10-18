@@ -5,6 +5,7 @@
     padding: 10px;
     position: relative;
     height: 30px;
+    align-items: center;
 }
 .user{
     flex-grow: 1;

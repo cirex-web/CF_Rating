@@ -1,3 +1,5 @@
 .content{
     display: flex;
+    gap: 25px;
+    align-items: flex-start;
 }

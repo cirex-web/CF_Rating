@@ -75,7 +75,6 @@ const useUsers = () => {
   const [userData, setUserData] = useState<User[] | undefined>(undefined);
   const getData = async (database: Database) => {
     onValue(ref(database, "users"), async (snapshot) => {
-      console.log("firebase snaposhot!");
       const userInitialRatings = snapshot.val();
       const userInfos = await fetchData("user.info", {
         handles: Object.keys(userInitialRatings)
