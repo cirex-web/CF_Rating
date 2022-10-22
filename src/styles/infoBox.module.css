@@ -1,0 +1,40 @@
+.userImage{
+    object-fit: contain;
+    height: 100%;
+    width: 100%;
+    vertical-align: bottom;
+}
+.imageContainer{
+    height: 244px;
+    background-color: white;
+}
+.imageExitContainer{
+    composes:imageContainer;
+    animation: fadeOut .1s forwards;
+    margin-bottom: -100%;
+}
+.imageEnterContainer{
+    composes:imageContainer;
+    animation: fadeIn .1s forwards;   
+    animation-delay: .05s;
+    opacity: 0;
+}
+@keyframes fadeOut {
+    0%{
+        transform: translate(0);
+    }
+    100%{
+        transform: translate(-100%,0);
+        opacity: 0;
+    }
+}
+@keyframes fadeIn {
+    0%{
+        transform: translate(100%);
+        opacity: 0;
+    }
+    100%{
+        transform: translate(0);
+        opacity: 1;
+    }
+}
