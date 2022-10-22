@@ -15,7 +15,7 @@ const Leaderboard = ({
 }) => {
   return (
     <div style={{ flexGrow: 1 }}>
-      <Box style={{ padding: 0 }}>
+      <Box padding={0}>
         {userInfos ? (
           userInfos.map((userData, i) => {
             new Image().src = userData.titlePhoto; //Preloading

@@ -1,13 +1,24 @@
 import useViews from "../hooks/useViews";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "../styles/infoBox.module.css";
 import useLastUpdate from "../hooks/useLastUpdate";
 import Box from "./Box";
 import { User } from "../hooks/useUsers";
-
-const InfoBox = ({ userData }: { userData?: User }) => {
+import css from "../styles/infoBox.module.css";
+const InfoBox = ({ userData: currentUser }: { userData?: User }) => {
   const { views } = useViews();
   const timeString = useLastUpdate();
+  const [previousUser, setPreviousUser] = useState<User>();
+  const [refreshKey, setRefreshKey] = useState(0);
+  useEffect(() => {
+    console.log("ch");
+    return () => {
+      console.log(refreshKey);
+      setPreviousUser(currentUser);
+      setRefreshKey(refreshKey + 1);
+    };
+  }, [currentUser]);
+  // console.log(refreshKey)
   return (
     <div
       style={{
@@ -27,12 +38,17 @@ const InfoBox = ({ userData }: { userData?: User }) => {
           <b>Last updated:</b> {timeString} ago
         </h2>
       </Box>
-      {userData && (
-        <Box style={{ padding: 0 }}>
-          <img
-            src={userData.titlePhoto}
-            style={{ width: "100%", verticalAlign: "bottom" }}
-          />
+      {currentUser && (
+        <Box padding={0}>
+          <div
+            className={css.imageExitContainer}
+            key={currentUser.handle+"P"}
+          >
+            <img src={previousUser?.titlePhoto} className={css.userImage} />
+          </div>
+          <div className={css.imageEnterContainer} key={currentUser.handle}>
+            <img src={currentUser.titlePhoto} className={css.userImage} />
+          </div>
         </Box>
       )}
     </div>
@@ -40,3 +56,4 @@ const InfoBox = ({ userData }: { userData?: User }) => {
 };
 export default InfoBox;
 // TODO: have there be another box below that shows individual stats when hovered
+// TODO: historgram?
